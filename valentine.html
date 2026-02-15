@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Valentine?</title>
+  <style>
+    :root {
+      --bg1: #ffdde1;
+      --bg2: #ee9ca7;
+      --card: rgba(255, 255, 255, 0.85);
+      --text: #2b2b2b;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(circle at top, var(--bg1), var(--bg2));
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    .card {
+      width: min(520px, 92vw);
+      background: var(--card);
+      border-radius: 24px;
+      padding: 22px 18px 18px;
+      box-shadow: 0 18px 50px rgba(0,0,0,0.18);
+      text-align: center;
+      backdrop-filter: blur(6px);
+      position: relative;
+    }
+
+    h1 {
+      margin: 8px 0 14px;
+      font-size: clamp(24px, 4vw, 34px);
+      letter-spacing: 0.2px;
+    }
+
+    .img-wrap {
+      width: 100%;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+      aspect-ratio: 16 / 10;
+      background: rgba(255,255,255,0.6);
+    }
+
+    .img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+      padding: 12px 18px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 18px;
+      transition: transform 0.12s ease, filter 0.12s ease;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+      user-select: none;
+    }
+
+    button:active { transform: scale(0.98); }
+
+    #yesBtn {
+      background: linear-gradient(135deg, #ff4d6d, #ff8fab);
+      color: white;
+    }
+
+    #noBtn {
+      background: white;
+      color: #ff4d6d;
+      border: 2px solid rgba(255, 77, 109, 0.35);
+    }
+
+    .hint {
+      margin-top: 10px;
+      font-size: 14px;
+      opacity: 0.75;
+    }
+
+    /* Floating hearts */
+    .heart {
+      position: absolute;
+      bottom: -40px;
+      font-size: 20px;
+      opacity: 0.9;
+      animation: floatUp 4.5s linear forwards;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,0.15));
+      pointer-events: none;
+    }
+    @keyframes floatUp {
+      0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.9; }
+      100% { transform: translateY(-120vh) translateX(var(--drift)) rotate(25deg); opacity: 0; }
+    }
+
+    /* Success screen */
+    .success {
+      display: none;
+      margin-top: 14px;
+      padding: 14px 12px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.7);
+      font-size: clamp(18px, 3.5vw, 28px);
+      font-weight: 800;
+      color: #ff2e63;
+      box-shadow: inset 0 0 0 2px rgba(255, 77, 109, 0.15);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card" id="card">
+    <h1 id="title">Will you be my valentine? 💘</h1>
+
+    <div class="img-wrap">
+      <!-- Replace valentine.jpg with your image filename, or use a full https image link -->
+      <img id="photo" src="valentine.gif" alt="Valentine photo" />
+    </div>
+
+    <div class="buttons" id="btnRow">
+      <button id="yesBtn">Yes</button>
+      <button id="noBtn">No</button>
+    </div>
+
+    <div class="hint" id="hint">Be honest 😇</div>
+    <div class="success" id="successMsg">YAY HAPPY VALENTINE 💖🥳</div>
+  </div>
+
+  <script>
+    const yesBtn = document.getElementById("yesBtn");
+    const noBtn = document.getElementById("noBtn");
+    const title = document.getElementById("title");
+    const hint = document.getElementById("hint");
+    const btnRow = document.getElementById("btnRow");
+    const successMsg = document.getElementById("successMsg");
+    const card = document.getElementById("card");
+
+    let yesScale = 1;
+    let noClicks = 0;
+
+    function spawnHeart() {
+      const heart = document.createElement("div");
+      heart.className = "heart";
+      heart.textContent = Math.random() > 0.5 ? "💖" : "💘";
+      heart.style.left = Math.random() * 100 + "vw";
+      heart.style.setProperty("--drift", (Math.random() * 120 - 60) + "px");
+      heart.style.fontSize = (16 + Math.random() * 26) + "px";
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 5000);
+    }
+
+    noBtn.addEventListener("click", () => {
+      noClicks++;
+
+      // Make YES bigger every time NO is clicked
+      yesScale = Math.min(yesScale + 0.22, 5); // cap so it doesn't go infinite
+      yesBtn.style.transform = `scale(${yesScale})`;
+
+      // Fun little reactions
+      const messages = [
+        "Are you sure? 🥺",
+        "Pleaseeee 😭",
+        "C’monnn 💗",
+        "Think again 😤",
+        "Last chance 😳"
+      ];
+      hint.textContent = messages[Math.min(noClicks - 1, messages.length - 1)];
+
+      // Tiny shake on NO
+      noBtn.style.transform = "translateX(-4px)";
+      setTimeout(() => (noBtn.style.transform = ""), 90);
+    });
+
+    yesBtn.addEventListener("click", () => {
+  // Hide buttons
+  btnRow.style.display = "none";
+  hint.style.display = "none";
+
+  // change title text
+  title.textContent = "YAYYYY 💖";
+
+  // show message
+  successMsg.style.display = "block";
+
+  // SWITCH THE GIF
+  const photo = document.getElementById("photo");
+  photo.src = "happy.gif";
+
+  // Heart celebration
+  let pops = 0;
+  const party = setInterval(() => {
+    spawnHeart();
+    pops++;
+    if (pops > 50) clearInterval(party);
+  }, 80);
+});
+
+    // If image fails to load, swap to a cute placeholder gradient
+    document.getElementById("photo").addEventListener("error", () => {
+      const wrap = document.querySelector(".img-wrap");
+      wrap.innerHTML = `
+        <div style="height:100%;display:grid;place-items:center;
+          background: radial-gradient(circle at top, #fff, #ffd1dc);
+          font-size:42px;">💝</div>`;
+    });
+  </script>
+</body>
+</html>
